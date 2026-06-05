@@ -1,0 +1,626 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{enumitem}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{Lasso 回归优化实验初步报告\\
+\large 供组内对齐进度与后续 PPT/终稿写作使用}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{文档用途说明}
+这不是最终提交版报告，而是一份组内流转的初步说明稿，目的是让未直接参与实验实现的组员也能快速理解：
+\begin{enumerate}[label=\arabic*.]
+    \item 课题做的是什么；
+    \item 目前已经完成了哪些实验；
+    \item 每个实验的具体参数设置是什么；
+    \item 实验过程中遇到了哪些问题、如何修正；
+    \item 后续写正式报告和制作 PPT 时还需要补哪些整理工作。
+\end{enumerate}
+
+\section{课题背景与研究目标}
+本课题围绕 Lasso 回归中的优化问题展开，重点比较以下四种算法在稀疏回归任务上的表现：
+\begin{itemize}[leftmargin=2em]
+    \item Subgradient Descent
+    \item ISTA
+    \item FISTA
+    \item ADMM
+\end{itemize}
+
+Lasso 模型写作
+\[
+\min_x \frac{1}{2}\|Ax-b\|_2^2 + \lambda \|x\|_1
+\]
+其中，第一项刻画拟合误差，第二项通过 $L_1$ 正则诱导稀疏性。
+
+本项目的研究目标包括：
+\begin{enumerate}[label=\arabic*.]
+    \item 在合成稀疏数据上比较四种算法的恢复误差、稀疏性和收敛速度；
+    \item 分析正则化参数 $\lambda$ 与 ADMM 参数 $\rho$ 的影响；
+    \item 分析噪声强度对稀疏恢复的影响；
+    \item 在真实数据集上验证算法在实际回归任务中的预测表现；
+    \item 通过正则化路径和相变分析补足 Lasso 主题下更完整的实验层次。
+\end{enumerate}
+
+\section{算法说明}
+\subsection{Subgradient Descent}
+该方法直接对非光滑目标函数做次梯度下降，作为 baseline。它实现简单，但步长敏感、收敛慢，在本实验中主要用于说明直接处理非光滑项的局限性。
+
+\subsection{ISTA}
+ISTA 是经典近端梯度法。每一步先对光滑项做梯度下降，再对 $L_1$ 项施加软阈值算子，因此能够更自然地处理 Lasso 问题。
+
+\subsection{FISTA}
+FISTA 是 ISTA 的加速版本，通过 Nesterov 动量项提升收敛速度。理论和实践上都应优于或不差于 ISTA。
+
+\subsection{ADMM}
+ADMM 通过变量分裂把 Lasso 问题拆分成二次子问题与软阈值子问题，适合处理“光滑项 + 非光滑项”的组合优化问题。本课题中，ADMM 是最核心的方法之一。
+
+\section{数据集设置}
+\subsection{合成数据}
+合成数据用于主实验，因为真实稀疏解 $x^\ast$ 已知，可以直接评估：
+\begin{itemize}[leftmargin=2em]
+    \item 恢复误差 $\|\hat{x} - x^\ast\|_2$
+    \item 非零元素个数
+    \item 支撑集恢复是否成功
+\end{itemize}
+
+合成数据构造方式如下：
+\begin{enumerate}[label=\arabic*.]
+    \item 生成高斯随机矩阵 $A$；
+    \item 按列归一化，减弱特征尺度不一致带来的影响；
+    \item 生成稀疏真实信号 $x^\ast$，仅保留少数非零元素；
+    \item 加入高斯噪声，构造观测 $b = Ax^\ast + \varepsilon$。
+\end{enumerate}
+
+\subsection{真实数据}
+目前使用了三个真实回归数据集：
+\begin{itemize}[leftmargin=2em]
+    \item \texttt{diabetes}：来自 \texttt{sklearn}，规模较小，适合作为真实数据补充实验；
+    \item \texttt{winequality-red.csv}：来自 UCI Wine Quality 数据集，使用红酒子集作为第二个真实数据验证场景。
+    \item \texttt{Communities and Crime}：来自 UCI，存在缺失值，特征更多，适合作为复杂真实高维回归场景的补充实验。
+\end{itemize}
+
+原本尝试接入 \texttt{California Housing}，但运行中遇到远程下载的 HTTP 403 问题，因此最终采用了本地可控的 \texttt{wine\_red} 与 \texttt{Communities and Crime} 数据。
+
+需要特别说明的是：合成数据与真实数据并不是做完全相同的实验，而是有明确分工：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{合成数据}：负责机制分析。因为知道真实稀疏解，所以可以做恢复误差、支撑集恢复、相变分析、噪声实验和规模扩展实验。
+    \item \textbf{真实数据}：负责应用验证。因为真实数据中不知道真实系数，所以重点考察预测误差、稀疏性和收敛效率。
+\end{itemize}
+
+\section{实验实现中的修正与改进}
+这一部分很重要，因为本项目并不是一次性得到完美结果，而是经历了“初版结果不理想 $\rightarrow$ 排查与修改 $\rightarrow$ 正式版结果”的过程。
+
+\subsection{初版存在的问题}
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Subgradient 在真实数据上出现数值不稳定。} 初版在 \texttt{diabetes} 上一度出现 \texttt{nan}。
+    \item \textbf{日志中出现大量 RuntimeWarning。} 虽然很多结果数值本身正常，但日志不够干净，不适合后续汇报展示。
+    \item \textbf{相变分析初版成功率全为 0。} 这使得“成功率曲线”本身不可解释。
+    \item \textbf{中等规模主实验中，初始选取的 $\lambda=0.05$ 虽然误差较低，但解偏稠密，不利于展示 Lasso 的稀疏恢复特性。}
+\end{enumerate}
+
+\subsection{对应修正}
+\begin{enumerate}[label=\arabic*.]
+    \item 对 Subgradient 的步长做了 Lipschitz 尺度归一化，使其从“数值发散”调整为“可以运行但收敛慢的 baseline”。
+    \item 对关键矩阵乘法加入安全封装，清理误导性警告。
+    \item 主实验参数从单纯追求较小误差，调整为更利于展示稀疏性的配置，即在合成数据正式主实验中采用 $\lambda=0.2$。
+    \item 相变分析新增两种成功标准：
+    \begin{itemize}[leftmargin=2em]
+        \item 严格标准：支撑集完全一致；
+        \item 宽松标准：命中至少 80\% 的真实非零位置。
+    \end{itemize}
+    \item 相变分析还调整为更适合观察趋势的实验规模：$m=120, n=300, s=10$。
+\end{enumerate}
+
+\section{已完成实验总览}
+到目前为止，已经完成以下实验：
+\begin{enumerate}[label=\arabic*.]
+    \item 小规模合成数据基线实验
+    \item 中等规模合成数据主实验
+    \item $\lambda$ 敏感性分析
+    \item $\rho$ 敏感性分析
+    \item 噪声强度实验
+    \item 多随机种子重复实验
+    \item 三档规模对比实验
+    \item 正则化路径可视化
+    \item 相变分析（严格版与宽松版）
+    \item 真实数据实验：\texttt{diabetes}
+    \item 真实数据实验：\texttt{wine\_red}
+    \item 真实数据实验：\texttt{Communities and Crime}
+\end{enumerate}
+
+\section{实验一：小规模合成数据基线实验}
+\subsection{实验目的}
+该实验用于：
+\begin{itemize}[leftmargin=2em]
+    \item 验证四种算法都能正常运行；
+    \item 展示基础的收敛速度差异；
+    \item 画出收敛曲线和系数恢复图。
+\end{itemize}
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item $m=80$
+    \item $n=200$
+    \item 稀疏度 $s=10$
+    \item 噪声水平 $\sigma=0.05$
+    \item $\lambda=0.05$
+    \item $\rho=1$
+\end{itemize}
+
+\subsection{主要现象}
+\begin{itemize}[leftmargin=2em]
+    \item Subgradient 产生的解几乎不稀疏；
+    \item ISTA、FISTA、ADMM 都能得到明显更稀疏的解；
+    \item ADMM 的迭代次数显著少于其他方法。
+\end{itemize}
+
+\section{实验二：中等规模合成数据主实验}
+\subsection{实验目的}
+该实验是本项目最核心的正式主实验，主要用于：
+\begin{itemize}[leftmargin=2em]
+    \item 在更高维稀疏场景下比较四种算法；
+    \item 形成后续参数分析和噪声分析的统一主设置；
+    \item 作为期末作业报告中的主结果来源。
+\end{itemize}
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item $m=150$
+    \item $n=500$
+    \item 稀疏度 $s=20$
+    \item 噪声水平 $\sigma=0.05$
+    \item $\lambda=0.2$
+    \item $\rho=1$
+    \item 最大迭代次数 800
+\end{itemize}
+
+\subsection{为什么最终采用 $\lambda=0.2$}
+在中等规模实验的初版中，我们比较了多个 $\lambda$。结果表明：
+\begin{itemize}[leftmargin=2em]
+    \item $\lambda=0.05$ 时恢复误差更低，但恢复出来的解偏稠密；
+    \item $\lambda=0.2$ 时非零元素个数更接近真实稀疏度 20，更适合展示 Lasso 稀疏恢复现象。
+\end{itemize}
+因此，为了服务“期末作业展示”的目的，而不只是追求单一数值误差最小，我们把 $\lambda=0.2$ 定为正式主实验参数。
+
+\subsection{正式主实验结果}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+算法 & recovery\_error & nnz & iter & 备注 \\
+\midrule
+Subgradient & 1.248809 & 499 & 800 & 几乎不稀疏 \\
+ISTA & 1.067482 & 26 & 241 & 稀疏恢复较好 \\
+FISTA & 1.067467 & 26 & 254 & 与 ISTA 接近 \\
+ADMM & 1.067471 & 26 & 80 & 收敛最快 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{结论}
+\begin{enumerate}[label=\arabic*.]
+    \item Subgradient 作为 baseline 效果最差，几乎无法产生理想稀疏解；
+    \item ISTA、FISTA、ADMM 都能恢复出接近真实稀疏度的解；
+    \item ADMM 在迭代次数上明显占优，是该设置下最突出的算法。
+\end{enumerate}
+
+\section{实验三：$\lambda$ 敏感性分析}
+\subsection{实验目的}
+研究正则化参数 $\lambda$ 对以下指标的影响：
+\begin{itemize}[leftmargin=2em]
+    \item 恢复误差
+    \item 解的稀疏性
+    \item 收敛速度
+\end{itemize}
+
+\subsection{实验设置}
+固定中等规模场景：
+\begin{itemize}[leftmargin=2em]
+    \item $m=150$
+    \item $n=500$
+    \item 稀疏度 $s=20$
+    \item $\sigma=0.05$
+    \item $\rho=1$
+\end{itemize}
+考察的 $\lambda$ 为：
+\[
+0.01,\ 0.05,\ 0.1,\ 0.2,\ 0.5
+\]
+
+\subsection{主要观察}
+\begin{itemize}[leftmargin=2em]
+    \item $\lambda=0.01$ 时解非常稠密；
+    \item $\lambda=0.05$ 时恢复误差较低，但非零个数偏大；
+    \item $\lambda=0.2$ 时稀疏性更接近真实稀疏结构；
+    \item $\lambda=0.5$ 时出现过度收缩，误差明显变大。
+\end{itemize}
+
+\subsection{结论}
+该实验清楚展示了 Lasso 的核心权衡：较小的 $\lambda$ 利于拟合精度，较大的 $\lambda$ 利于稀疏恢复。正式主实验最终采用 $\lambda=0.2$，是出于“更适合展示稀疏结构”的考虑。
+
+\section{实验四：$\rho$ 敏感性分析}
+\subsection{实验目的}
+研究 ADMM 参数 $\rho$ 对收敛速度和最终结果的影响。
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item $m=150$
+    \item $n=500$
+    \item $s=20$
+    \item $\sigma=0.05$
+    \item $\lambda=0.2$
+    \item $\rho \in \{0.1, 0.5, 1, 5, 10\}$
+\end{itemize}
+
+\subsection{主要结果}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+$\rho$ & ADMM iter & 说明 \\
+\midrule
+0.1 & 726 & 收敛很慢 \\
+0.5 & 149 & 明显改善 \\
+1 & 80 & 最快 \\
+5 & 185 & 再次变慢 \\
+10 & 376 & 明显变慢 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{结论}
+不同 $\rho$ 对最终恢复误差影响不大，但对收敛速度影响显著。当前实验设置下，$\rho=1$ 最合适。
+
+\section{实验五：噪声强度实验}
+\subsection{实验目的}
+考察观测噪声水平对稀疏恢复难度的影响。
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item $m=150$
+    \item $n=500$
+    \item $s=20$
+    \item $\lambda=0.2$
+    \item $\rho=1$
+    \item $\sigma \in \{0.00, 0.01, 0.05, 0.10\}$
+\end{itemize}
+
+\subsection{主要结果}
+以 ADMM 为例：
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+$\sigma$ & recovery\_error & nnz \\
+\midrule
+0.00 & 1.058223 & 17 \\
+0.01 & 1.056204 & 19 \\
+0.05 & 1.067471 & 26 \\
+0.10 & 1.301248 & 50 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{结论}
+噪声越大，恢复误差越大，恢复出的解越不稀疏，说明噪声会显著破坏对真实稀疏结构的识别能力。
+
+\section{实验六：多随机种子重复实验}
+\subsection{实验目的}
+前面的主实验大多基于单个随机种子。为了减少单次随机生成数据带来的偶然性，我们进一步在多个随机种子下重复主实验，并统计各指标的均值与标准差。
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item 主实验参数保持不变：
+    \begin{itemize}[leftmargin=2em]
+        \item $m=150$
+        \item $n=500$
+        \item 稀疏度 $s=20$
+        \item $\sigma=0.05$
+        \item $\lambda=0.2$
+        \item $\rho=1$
+    \end{itemize}
+    \item 随机种子取 $\{0,1,2,3,4\}$
+    \item 记录指标：
+    \begin{itemize}[leftmargin=2em]
+        \item 恢复误差均值与标准差
+        \item 非零元素个数均值与标准差
+        \item 迭代次数均值与标准差
+    \end{itemize}
+\end{itemize}
+
+\subsection{实验结果}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+算法 & recovery\_error\_mean & nnz\_mean & iter\_mean \\
+\midrule
+ADMM & 0.934555 & 21.4 & 81.8 \\
+FISTA & 0.934569 & 21.4 & 215.0 \\
+ISTA & 0.934565 & 21.4 & 229.6 \\
+Subgradient & 1.120904 & 499.2 & 800.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{结果分析}
+\begin{enumerate}[label=\arabic*.]
+    \item ADMM、ISTA、FISTA 在恢复误差和稀疏度上都较为稳定，说明主实验结论不是偶然现象；
+    \item ADMM 的平均迭代次数显著低于 ISTA 和 FISTA；
+    \item Subgradient 即使在重复实验下仍然表现最差，说明其劣势是稳定存在的，而不是某一次随机实验造成的。
+\end{enumerate}
+
+\subsection{结论}
+重复实验显著增强了结果的可信度，也使本项目从“单次演示实验”提升为“具有统计稳定性分析”的期末作业。
+
+\section{实验七：三档规模对比实验}
+\subsection{实验目的}
+研究问题规模增大时，各算法的恢复误差、稀疏性和收敛速度如何变化。相比只增大某一个参数，三档规模对比更能系统展示算法在高维场景下的适应性。
+
+\subsection{实验设置}
+固定：
+\begin{itemize}[leftmargin=2em]
+    \item $\sigma=0.05$
+    \item $\lambda=0.2$
+    \item $\rho=1$
+\end{itemize}
+
+三档规模分别为：
+\begin{itemize}[leftmargin=2em]
+    \item 小规模：$m=80,\ n=200,\ s=10$
+    \item 中规模：$m=150,\ n=500,\ s=20$
+    \item 大规模：$m=300,\ n=1000,\ s=30$
+\end{itemize}
+
+\subsection{实验结果}
+\begin{center}
+\begin{tabular}{llccc}
+\toprule
+规模 & 算法 & recovery\_error & nnz & iter \\
+\midrule
+80/200/10 & ADMM & 0.578516 & 7 & 70 \\
+80/200/10 & ISTA & 0.578516 & 7 & 97 \\
+80/200/10 & FISTA & 0.578516 & 7 & 117 \\
+80/200/10 & Subgradient & 0.582503 & 200 & 800 \\
+\midrule
+150/500/20 & ADMM & 1.067471 & 26 & 80 \\
+150/500/20 & ISTA & 1.067482 & 26 & 241 \\
+150/500/20 & FISTA & 1.067467 & 26 & 254 \\
+150/500/20 & Subgradient & 1.248809 & 499 & 800 \\
+\midrule
+300/1000/30 & ADMM & 1.235796 & 31 & 84 \\
+300/1000/30 & ISTA & 1.235805 & 31 & 221 \\
+300/1000/30 & FISTA & 1.235818 & 31 & 198 \\
+300/1000/30 & Subgradient & 1.393068 & 1000 & 800 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{结果分析}
+\begin{enumerate}[label=\arabic*.]
+    \item 随着问题维度从 200 增长到 1000，ADMM、ISTA、FISTA 的恢复误差有所上升，这是更高维问题更困难的自然表现；
+    \item 在三档规模下，ADMM 与 ISTA/FISTA 的恢复误差几乎一致，说明它并未牺牲解质量；
+    \item ADMM 在三档规模下的迭代次数始终较低，分别为 70、80、84，展现出较好的规模适应性；
+    \item Subgradient 在所有规模下都表现最差，且始终跑满最大迭代次数。
+\end{enumerate}
+
+\subsection{结论}
+三档规模实验表明，随着问题规模增大，ADMM 仍然能够在保证解质量的同时保持较低的迭代成本，这进一步支撑了其在高维稀疏恢复问题中的效率优势。
+
+\section{实验八：正则化路径可视化}
+\subsection{实验目的}
+观察“所有特征系数随 $\lambda$ 变化的路径”，直观展示 Lasso 如何通过增大正则化强度逐步压缩系数。
+
+\subsection{实验设置}
+\begin{itemize}[leftmargin=2em]
+    \item 合成数据
+    \item 求解器：ADMM
+    \item $\lambda \in \{0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0\}$
+\end{itemize}
+
+\subsection{结果解释}
+随着 $\lambda$ 增大，越来越多的特征系数逐渐向 0 收缩，路径图可以清楚展示 Lasso 的稀疏化机制。这项实验已经满足最初方案中的“正则化路径可视化”设想。
+
+\section{实验九：相变分析}
+\subsection{初版问题}
+最开始，相变分析采用更高维、更严格设置，得到的成功率全部为 0，无法形成有效曲线。
+
+\subsection{改进后的正式设置}
+为得到更有解释性的相变趋势，我们采用：
+\begin{itemize}[leftmargin=2em]
+    \item $m=120$
+    \item $n=300$
+    \item 稀疏度 $s=10$
+    \item $\lambda=0.1$
+    \item $\rho=1$
+    \item $\sigma \in \{0.00, 0.01, 0.05, 0.10, 0.20\}$
+    \item 每个噪声水平重复 10 次
+\end{itemize}
+
+\subsection{两种成功标准}
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{严格标准（exact）}：恢复出的支撑集与真实支撑集完全一致才算成功；
+    \item \textbf{宽松标准（relaxed）}：命中至少 80\% 的真实非零位置即视为成功。
+\end{enumerate}
+
+\subsection{严格版结果}
+\begin{itemize}[leftmargin=2em]
+    \item $\sigma=0.00$ 时成功率约 0.3
+    \item $\sigma=0.01$ 时成功率约 0.5
+    \item $\sigma \ge 0.05$ 时成功率降为 0
+\end{itemize}
+
+\subsection{宽松版结果}
+\begin{itemize}[leftmargin=2em]
+    \item $\sigma=0.00, 0.01, 0.05, 0.10$ 时成功率接近 1.0
+    \item $\sigma=0.20$ 时成功率约 0.9
+\end{itemize}
+
+\subsection{结论}
+严格标准下，仅低噪声时才有较明显的完全恢复概率；宽松标准下，算法在低到中等噪声下仍能恢复大部分真实非零位置。该实验现已能够支撑“相变分析”的汇报内容，同时也反映出我们对初版不理想实验结果所做的修正。
+
+\section{实验十：真实数据实验}
+\subsection{真实数据一：diabetes}
+\subsubsection{实验目的}
+验证算法在小规模真实回归任务中的预测误差和收敛效率。
+
+\subsubsection{结果特点}
+\begin{itemize}[leftmargin=2em]
+    \item 四种算法的预测误差接近；
+    \item ADMM 收敛较快；
+    \item 修正步长后，Subgradient 可以稳定运行。
+\end{itemize}
+
+\subsection{真实数据二：wine\_red}
+\subsubsection{实验目的}
+作为第二个真实回归数据集，验证结果是否在另一个数据集上仍然成立。
+
+\subsubsection{实验设置}
+使用 UCI Wine Quality 红酒数据集，目标变量为 \texttt{quality}，其余数值列作为特征。
+
+\subsubsection{结果特点}
+\begin{itemize}[leftmargin=2em]
+    \item $\lambda=0.05$ 与 $\lambda=0.2$ 的结果差异很小；
+    \item 四种算法预测误差非常接近；
+    \item ADMM 的迭代次数最少，效率优势清晰；
+    \item Subgradient 虽然能运行，但整体效率不如其他方法。
+\end{itemize}
+
+\subsection{真实数据三：Communities and Crime}
+\subsubsection{实验目的}
+将实验扩展到一个更复杂的高维真实回归数据集，用于验证 Lasso 及其优化算法在“存在缺失值、需要清洗、特征维度较高”的实际场景中的表现。
+
+\subsubsection{数据特点}
+\begin{itemize}[leftmargin=2em]
+    \item 原始数据包含 1994 个样本、128 个属性；
+    \item 存在缺失值；
+    \item 包含若干 ID/名称类非预测字段；
+    \item 目标变量为 \texttt{ViolentCrimesPerPop}。
+\end{itemize}
+
+\subsubsection{清洗流程}
+为保证可用于回归实验，我们采用了以下清洗流程：
+\begin{enumerate}[label=\arabic*.]
+    \item 使用 \texttt{communities.names} 恢复列名；
+    \item 将 `?` 视为缺失值；
+    \item 删除非预测列：\texttt{state, county, community, communityname, fold}；
+    \item 删除缺失比例超过 30\% 的特征列；
+    \item 对剩余缺失值使用中位数填补；
+    \item 划分训练集/测试集，并进行标准化。
+\end{enumerate}
+
+清洗后最终保留了 100 个有效特征。
+
+\subsubsection{实验结果与分析}
+我们分别测试了 $\lambda=0.05,\ 0.2,\ 1.0$。结果表明：
+\begin{itemize}[leftmargin=2em]
+    \item 在 $\lambda=0.05$ 和 $\lambda=0.2$ 下，模型几乎保留了全部特征，稀疏化效果不明显；
+    \item 当 $\lambda=1.0$ 时，FISTA 与 ADMM 的非零特征数明显下降到 84 和 83，开始体现较强的稀疏化作用；
+    \item 同时测试误差没有明显恶化，说明在该复杂真实数据上，更强正则化可以在不显著损失泛化性能的情况下提升稀疏性。
+\end{itemize}
+
+\subsubsection{结论}
+Communities and Crime 数据集的价值不在于其特征维度一定高于合成数据，而在于它是真实的、带缺失值的、清洗成本较高的复杂回归数据集。它补充说明了：Lasso 的特征选择作用在复杂真实数据上同样存在，但往往需要更强的正则化参数才能显现。
+
+\section{当前总体结论}
+综合目前已经完成的实验，可以得到以下核心结论：
+\begin{enumerate}[label=\arabic*.]
+    \item Subgradient 作为 baseline，整体收敛慢、稀疏性差，在合成数据上的表现明显弱于其他三种方法；
+    \item ISTA、FISTA、ADMM 都可以有效求解 Lasso，其中 ADMM 在当前实验中迭代次数通常最少；
+    \item $\lambda$ 控制拟合误差与稀疏性的平衡；
+    \item $\rho$ 主要影响 ADMM 的收敛速度，而不是最终解；
+    \item 噪声越大，稀疏恢复越困难；
+    \item 多随机种子重复实验表明主结论具有稳定性，不是单次随机实验的偶然结果；
+    \item 三档规模实验表明 ADMM 在问题规模增大时仍保持较好的效率优势；
+    \item 在真实数据上，结构化方法的预测精度通常接近，但 ADMM 仍具有较强的收敛效率优势；
+    \item 在更复杂的 Communities and Crime 数据集上，Lasso 的稀疏化作用需要更强的正则化参数才能明显显现；
+    \item 正则化路径和相变分析补足了本项目作为 Lasso 优化实验的完整性。
+\end{enumerate}
+
+\section{目前是否足以支撑期末大作业}
+从实验层次和内容覆盖度看，目前已经足以支撑一份期末小组大作业。原因是：
+\begin{itemize}[leftmargin=2em]
+    \item 有理论模型；
+    \item 有四种算法；
+    \item 有不同规模的合成数据；
+    \item 有参数分析；
+    \item 有噪声分析；
+    \item 有重复实验稳定性分析；
+    \item 有问题规模扩展分析；
+    \item 有正则化路径；
+    \item 有相变分析；
+    \item 有三个真实数据集验证。
+\end{itemize}
+
+因此，后续工作的重点不应再是盲目扩展实验数量，而应转为：
+\begin{enumerate}[label=\arabic*.]
+    \item 整理图表；
+    \item 完善实验分析文字；
+    \item 组织 PPT 展示逻辑；
+    \item 统一报告的最终叙述口径。
+\end{enumerate}
+
+\section{后续还需要补什么}
+目前更需要补的是整理工作，而非额外跑大量新实验。建议后续分工如下：
+
+\subsection{需要整理的表格}
+\begin{itemize}[leftmargin=2em]
+    \item 四算法主实验对比表
+    \item $\lambda$ 敏感性结果表
+    \item $\rho$ 敏感性结果表
+    \item 噪声实验结果表
+    \item 真实数据实验结果汇总表（diabetes、wine\_red、Communities and Crime）
+\end{itemize}
+
+\subsection{建议放入正式报告/PPT 的图}
+\begin{itemize}[leftmargin=2em]
+    \item 合成数据收敛曲线图
+    \item 合成数据稀疏恢复图
+    \item 正则化路径图
+    \item 相变分析图（严格版和宽松版至少选一张）
+    \item 一张真实数据结果汇总表
+\end{itemize}
+
+\subsection{建议在 PPT 中讲清楚的重点}
+\begin{enumerate}[label=\arabic*.]
+    \item 为什么要研究 Lasso；
+    \item 为什么要比较这四种算法；
+    \item 为什么 ADMM 适合该问题；
+    \item 为什么最终主实验参数选为 $\lambda=0.2,\rho=1$；
+    \item 为什么相变分析需要从初版结果进一步修正；
+    \item 最终三到四条最核心的结论是什么。
+\end{enumerate}
+
+\section{建议的最终报告结构}
+\begin{enumerate}[label=\arabic*.]
+    \item 研究背景与问题定义
+    \item Lasso 模型与算法介绍
+    \item 实验设置
+    \item 合成数据主实验
+    \item 参数敏感性分析
+    \item 噪声实验与相变分析
+    \item 正则化路径分析
+    \item 真实数据实验
+    \item 实验中遇到的问题与修正
+    \item 总结与展望
+\end{enumerate}
+
+\section{给组员的一句话总结}
+目前实验主体已经完成，且已经从初版不理想结果中修正出一套正式版实验。接下来最重要的工作不是再无控制地扩实验，而是把现有结果整理成清晰的图表、结论和 PPT 叙述。
+
+\end{document}
