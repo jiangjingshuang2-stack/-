@@ -7,4 +7,10 @@ report_draft.out
 report_draft.fdb_latexmk
 report_draft.fls
 report_draft.xdv
+final_report.aux
+final_report.log
+final_report.out
+final_report.fdb_latexmk
+final_report.fls
+final_report.xdv
 .venv/
