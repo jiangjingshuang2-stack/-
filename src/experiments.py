@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import wandb
+from sklearn.linear_model import Lasso
 
 from src.algorithms import admm, fista, ista, subgradient_descent
 from src.data import (
@@ -120,6 +121,62 @@ def evaluate_synthetic(A, b, x_star, lam, max_iter, result_dir, rho, use_wandb):
         "synthetic",
         use_wandb,
     )
+    return results
+
+
+def sklearn_lasso_baseline(A, b, lam, max_iter=5000):
+    # sklearn 的 Lasso 目标写法是
+    # (1 / (2 * n_samples)) ||Ax - b||_2^2 + alpha ||x||_1
+    # 为了与当前实验的目标函数 0.5 ||Ax-b||_2^2 + lambda ||x||_1 对齐，
+    # 这里取 alpha = lambda / n_samples。
+    alpha = lam / A.shape[0]
+    model = Lasso(alpha=alpha, fit_intercept=False, max_iter=max_iter, tol=1e-6)
+    model.fit(A, b)
+    coef = model.coef_.copy()
+    history = {"objective": [], "time": []}
+    return coef, history
+
+
+def evaluate_synthetic_with_sklearn(A, b, x_star, lam, max_iter, rho):
+    solvers = {
+        "Subgradient": lambda: subgradient_descent(A, b, lam, max_iter=max_iter),
+        "ISTA": lambda: ista(A, b, lam, max_iter=max_iter),
+        "FISTA": lambda: fista(A, b, lam, max_iter=max_iter),
+        "ADMM": lambda: admm(A, b, lam, rho=rho, max_iter=max_iter),
+        "sklearn_Lasso": lambda: sklearn_lasso_baseline(A, b, lam),
+    }
+    results = {}
+    for name, solver in solvers.items():
+        x_hat, history = solver()
+        results[name] = {
+            "x_hat": x_hat,
+            "history": history,
+            "recovery_error": np.linalg.norm(x_hat - x_star),
+            "nnz": int(np.sum(np.abs(x_hat) > 1e-6)),
+        }
+    return results
+
+
+def evaluate_real_with_sklearn(X_train, X_test, y_train, y_test, lam, max_iter, rho):
+    solvers = {
+        "Subgradient": lambda: subgradient_descent(X_train, y_train, lam, max_iter=max_iter),
+        "ISTA": lambda: ista(X_train, y_train, lam, max_iter=max_iter),
+        "FISTA": lambda: fista(X_train, y_train, lam, max_iter=max_iter),
+        "ADMM": lambda: admm(X_train, y_train, lam, rho=rho, max_iter=max_iter),
+        "sklearn_Lasso": lambda: sklearn_lasso_baseline(X_train, y_train, lam),
+    }
+    results = {}
+    for name, solver in solvers.items():
+        coef, history = solver()
+        pred_train = safe_matmul(X_train, coef)
+        pred_test = safe_matmul(X_test, coef)
+        results[name] = {
+            "coef": coef,
+            "history": history,
+            "train_mse": mse(y_train, pred_train),
+            "test_mse": mse(y_test, pred_test),
+            "nnz": int(np.sum(np.abs(coef) > 1e-6)),
+        }
     return results
 
 
@@ -481,6 +538,32 @@ def print_diabetes_results(results):
         print(line)
 
 
+def print_synthetic_sklearn_results(results):
+    print("\nSynthetic dataset results with sklearn baseline")
+    print("-" * 60)
+    for name, payload in results.items():
+        line = (
+            f"{name:14s} | recovery_error={payload['recovery_error']:.6f} "
+            f"| nnz={payload['nnz']:3d}"
+        )
+        if payload["history"].get("objective"):
+            line += f" | iter={len(payload['history']['objective']):3d}"
+        print(line)
+
+
+def print_real_sklearn_results(results):
+    print("\nReal dataset results with sklearn baseline")
+    print("-" * 60)
+    for name, payload in results.items():
+        line = (
+            f"{name:14s} | train_mse={payload['train_mse']:.6f} "
+            f"| test_mse={payload['test_mse']:.6f} | nnz={payload['nnz']:3d}"
+        )
+        if payload["history"].get("objective"):
+            line += f" | iter={len(payload['history']['objective']):3d}"
+        print(line)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -490,7 +573,14 @@ def main():
     )
     parser.add_argument(
         "--experiment",
-        choices=["baseline", "regularization_path", "phase_transition", "repeat", "scale"],
+        choices=[
+            "baseline",
+            "regularization_path",
+            "phase_transition",
+            "repeat",
+            "scale",
+            "sklearn_compare",
+        ],
         default="baseline",
     )
     parser.add_argument("--lambda_", type=float, default=0.1)
@@ -549,7 +639,17 @@ def main():
             },
         )
 
-    if args.dataset == "synthetic" and args.experiment == "repeat":
+    if args.dataset == "synthetic" and args.experiment == "sklearn_compare":
+        A, b, x_star, _ = make_synthetic_lasso_data(
+            m=args.m,
+            n=args.n,
+            sparsity=args.sparsity,
+            sigma=args.sigma,
+            random_state=args.seed,
+        )
+        results = evaluate_synthetic_with_sklearn(A, b, x_star, args.lambda_, args.max_iter, args.rho)
+        print_synthetic_sklearn_results(results)
+    elif args.dataset == "synthetic" and args.experiment == "repeat":
         seeds = [int(item.strip()) for item in args.repeat_seeds.split(",") if item.strip()]
         detail_table, summary_table, detail_csv, summary_csv = run_repeat_experiment(
             m=args.m,
@@ -646,18 +746,24 @@ def main():
     elif args.dataset == "diabetes":
         # 真实数据作为补充实验，重点看泛化误差和系数稀疏性。
         X_train, X_test, y_train, y_test = load_diabetes_data(random_state=args.seed)
-        results = evaluate_diabetes(
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            args.lambda_,
-            args.max_iter,
-            result_dir,
-            args.rho,
-            args.use_wandb,
-        )
-        print_diabetes_results(results)
+        if args.experiment == "sklearn_compare":
+            results = evaluate_real_with_sklearn(
+                X_train, X_test, y_train, y_test, args.lambda_, args.max_iter, args.rho
+            )
+            print_real_sklearn_results(results)
+        else:
+            results = evaluate_diabetes(
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                args.lambda_,
+                args.max_iter,
+                result_dir,
+                args.rho,
+                args.use_wandb,
+            )
+            print_diabetes_results(results)
     elif args.dataset == "california_housing":
         # California Housing 作为第二个真实回归数据集，
         # 用于验证更大规模真实数据上的预测与收敛表现。
@@ -679,37 +785,49 @@ def main():
     elif args.dataset == "wine_red":
         # Wine Quality 红酒数据是本地 CSV，无需联网，适合作为第二个真实回归数据集。
         X_train, X_test, y_train, y_test = load_wine_red_data(random_state=args.seed)
-        results = evaluate_diabetes(
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            args.lambda_,
-            args.max_iter,
-            result_dir,
-            args.rho,
-            args.use_wandb,
-        )
-        print_diabetes_results(results)
+        if args.experiment == "sklearn_compare":
+            results = evaluate_real_with_sklearn(
+                X_train, X_test, y_train, y_test, args.lambda_, args.max_iter, args.rho
+            )
+            print_real_sklearn_results(results)
+        else:
+            results = evaluate_diabetes(
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                args.lambda_,
+                args.max_iter,
+                result_dir,
+                args.rho,
+                args.use_wandb,
+            )
+            print_diabetes_results(results)
     else:
         # Communities and Crime 是更高维、更复杂的真实回归数据集，
         # 适合补充展示 Lasso 在缺失值与高维场景下的表现。
         X_train, X_test, y_train, y_test, kept_features = load_communities_crime_data(
             random_state=args.seed
         )
-        results = evaluate_diabetes(
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            args.lambda_,
-            args.max_iter,
-            result_dir,
-            args.rho,
-            args.use_wandb,
-        )
         print(f"\nCommunities and Crime cleaned features: {kept_features}")
-        print_diabetes_results(results)
+        if args.experiment == "sklearn_compare":
+            results = evaluate_real_with_sklearn(
+                X_train, X_test, y_train, y_test, args.lambda_, args.max_iter, args.rho
+            )
+            print_real_sklearn_results(results)
+        else:
+            results = evaluate_diabetes(
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                args.lambda_,
+                args.max_iter,
+                result_dir,
+                args.rho,
+                args.use_wandb,
+            )
+            print_diabetes_results(results)
 
     if args.use_wandb:
         wandb.finish()

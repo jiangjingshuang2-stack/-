@@ -21,6 +21,8 @@
 - `synthetic_phase_transition_exact.png`
 - `synthetic_phase_transition_relaxed.png`
 
+实际写报告时，优先直接从 `report_figures/` 目录中取用已经重命名好的版本，避免组员误拿中间结果图。
+
 建议备份保留：
 - 其他中间实验图
 - 不准备直接展示但可能答辩时会问到的日志或表
@@ -147,6 +149,20 @@
 
 这类讨论会让结论更成熟。
 
+### 5. 加入 sklearn Lasso 对照验证
+
+正式终稿里建议明确写：
+- 我们额外使用 `sklearn.linear_model.Lasso` 作为参考对照
+- 它不是新的主算法，而是用来验证自实现结构化方法的正确性与可信度
+
+建议至少写两个场景：
+- 合成数据主实验对照
+- Communities and Crime 对照
+
+建议突出：
+- 合成数据主实验中，`sklearn Lasso` 与 `ADMM/FISTA` 的 `recovery error` 和 `nnz` 基本一致
+- Communities and Crime 中，`sklearn Lasso` 与 `ADMM/FISTA` 的 `test_mse` 和 `nnz` 非常接近
+
 ---
 
 ## 三、PPT 制作待办
@@ -167,6 +183,7 @@
 - 参数页：`lambda 决定稀疏性与精度的权衡，rho 主要影响 ADMM 收敛速度`
 - 稳定性页：`ADMM 的优势在多随机种子和多种规模下都成立`
 - 真实数据页：`结构化方法在真实数据上同样有效，复杂数据需要更强正则化`
+- 对照验证页或补充说明：`sklearn 对照结果与自实现方法高度一致，增强了实验可信度`
 
 ### 3. 准备一页备份页
 
@@ -204,6 +221,12 @@
 - 课程内容直接涉及 ADMM
 - Lasso 是 ADMM 的经典应用
 - 实验中它在保持解质量的同时收敛更快
+
+### 6. 为什么还要加 sklearn Lasso 对照？
+答题方向：
+- 为了验证自实现算法的正确性
+- 让结果和成熟库实现建立对照
+- 增强正式报告和答辩时的可信度
 
 ### 5. Communities and Crime 为什么值得加？
 答题方向：

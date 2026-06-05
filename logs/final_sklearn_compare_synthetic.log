@@ -1,0 +1,8 @@
+
+Synthetic dataset results with sklearn baseline
+------------------------------------------------------------
+Subgradient    | recovery_error=1.248809 | nnz=499 | iter=800
+ISTA           | recovery_error=1.067482 | nnz= 26 | iter=241
+FISTA          | recovery_error=1.067467 | nnz= 26 | iter=254
+ADMM           | recovery_error=1.067471 | nnz= 26 | iter= 80
+sklearn_Lasso  | recovery_error=1.067471 | nnz= 26

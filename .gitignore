@@ -4,5 +4,7 @@ __pycache__/
 report_draft.aux
 report_draft.log
 report_draft.out
+report_draft.fdb_latexmk
+report_draft.fls
+report_draft.xdv
 .venv/
-

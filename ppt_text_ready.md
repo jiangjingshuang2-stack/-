@@ -4,6 +4,7 @@
 - 这份文件不是制作说明，而是更接近成品的文字稿。
 - 每一页中的文字都可以直接复制到 PPT 文本框里，再根据版式微调。
 - 默认对应 [ppt_plan_detailed.md](/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/ppt_plan_detailed.md) 的 8 页结构。
+- 配图时优先使用 `report_figures/` 目录里已经重命名好的图片文件。
 
 ---
 
@@ -105,6 +106,8 @@ Lasso 模型与四种算法
   - `diabetes`
   - `wine_red`
   - `Communities and Crime`
+
+- 为了增强可信度，我们还额外加入了 `sklearn Lasso` 作为参考对照，但它的定位是“验证自实现结果是否可靠”，不是新的主算法主角。
 
 ### 这一页建议口播关键词
 - 合成数据做机制分析
@@ -289,6 +292,11 @@ Lasso 模型与四种算法
   - 结构化方法的预测误差通常接近
   - `ADMM` 的收敛速度往往更有优势
   - 在 `Communities and Crime` 上，只有当 `lambda` 增大到 `1.0` 时，稀疏化作用才明显出现
+
+- 为了增强实验可信度，我们还加入了 `sklearn Lasso` 对照：
+  - 在合成数据主实验中，`sklearn Lasso` 与 `ADMM/FISTA` 的恢复误差和 `nnz` 基本一致
+  - 在 `Communities and Crime` 上，`sklearn Lasso` 与 `ADMM/FISTA` 的 `test_mse` 和 `nnz` 也非常接近
+  - 这说明我们的自实现结果是可信的
 
 - 最终结论：
   我们不仅在合成数据上验证了算法机制，也在真实数据上完成了应用验证。
