@@ -434,16 +434,40 @@ def plot_objectives(results, result_dir, filename):
 
 
 def plot_coefficients(x_star, results, result_dir, filename):
-    # 合成数据上画出真实系数与恢复系数，直观看稀疏恢复效果。
-    plt.figure(figsize=(10, 5))
-    plt.plot(x_star, label="True", linewidth=2)
-    for name in ["ADMM", "FISTA", "ISTA", "Subgradient"]:
-        plt.plot(results[name]["x_hat"], label=name, alpha=0.8)
-    plt.xlabel("Index")
-    plt.ylabel("Coefficient")
-    plt.title("Sparse Signal Recovery")
-    plt.legend()
-    plt.tight_layout()
+    # 将四种算法拆成 2x2 子图展示，并统一横纵坐标范围，
+    # 避免多条曲线叠在一张图里难以区分。
+    ordered_names = ["ADMM", "FISTA", "ISTA", "Subgradient"]
+    all_series = [x_star] + [results[name]["x_hat"] for name in ordered_names]
+    y_min = min(np.min(series) for series in all_series)
+    y_max = max(np.max(series) for series in all_series)
+    y_pad = 0.05 * max(1e-6, y_max - y_min)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 7), sharex=True, sharey=True)
+    axes = axes.ravel()
+    x_index = np.arange(len(x_star))
+
+    for ax, name in zip(axes, ordered_names):
+        ax.plot(x_index, x_star, label="True signal", linewidth=2, color="black")
+        ax.plot(
+            x_index,
+            results[name]["x_hat"],
+            label=name,
+            linewidth=1.6,
+            color="tab:blue",
+        )
+        ax.set_title(name)
+        ax.set_xlim(0, len(x_star) - 1)
+        ax.set_ylim(y_min - y_pad, y_max + y_pad)
+        ax.grid(alpha=0.25, linewidth=0.5)
+        ax.legend(fontsize=8, loc="upper right")
+
+    for ax in axes[2:]:
+        ax.set_xlabel("Index")
+    for ax in axes[::2]:
+        ax.set_ylabel("Coefficient")
+
+    fig.suptitle("Sparse Signal Recovery by Algorithm", fontsize=14)
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
     plt.savefig(os.path.join(result_dir, filename), dpi=200)
     plt.close()
 
