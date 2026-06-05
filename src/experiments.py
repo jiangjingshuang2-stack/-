@@ -437,6 +437,12 @@ def plot_coefficients(x_star, results, result_dir, filename):
     # 将四种算法拆成 2x2 子图展示，并统一横纵坐标范围，
     # 避免多条曲线叠在一张图里难以区分。
     ordered_names = ["ADMM", "FISTA", "ISTA", "Subgradient"]
+    algorithm_colors = {
+        "ADMM": "tab:blue",
+        "FISTA": "tab:orange",
+        "ISTA": "tab:green",
+        "Subgradient": "tab:red",
+    }
     all_series = [x_star] + [results[name]["x_hat"] for name in ordered_names]
     y_min = min(np.min(series) for series in all_series)
     y_max = max(np.max(series) for series in all_series)
@@ -453,7 +459,7 @@ def plot_coefficients(x_star, results, result_dir, filename):
             results[name]["x_hat"],
             label=name,
             linewidth=1.6,
-            color="tab:blue",
+            color=algorithm_colors[name],
         )
         ax.set_title(name)
         ax.set_xlim(0, len(x_star) - 1)
