@@ -5,5 +5,4 @@ report_draft.aux
 report_draft.log
 report_draft.out
 .venv/
-logs/
-results/
+

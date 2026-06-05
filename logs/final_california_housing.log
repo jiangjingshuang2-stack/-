@@ -1,0 +1,30 @@
+/opt/anaconda3/envs/lasso-exp/lib/python3.10/site-packages/sklearn/datasets/_base.py:1518: UserWarning: Retry downloading from url: https://ndownloader.figshare.com/files/5976036
+  warnings.warn(f"Retry downloading from url: {remote.url}")
+Traceback (most recent call last):
+  File "/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/run_experiments.py", line 6, in <module>
+    main()
+  File "/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/experiments.py", line 278, in main
+    X_train, X_test, y_train, y_test = load_california_housing_data(
+  File "/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/data.py", line 57, in load_california_housing_data
+    data = fetch_california_housing()
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/site-packages/sklearn/datasets/_california_housing.py", line 177, in fetch_california_housing
+    archive_path = _fetch_remote(
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/site-packages/sklearn/datasets/_base.py", line 1512, in _fetch_remote
+    urlretrieve(remote.url, temp_file_path)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 241, in urlretrieve
+    with contextlib.closing(urlopen(url, data)) as fp:
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 525, in open
+    response = meth(req, response)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 634, in http_response
+    response = self.parent.error(
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 563, in error
+    return self._call_chain(*args)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/opt/anaconda3/envs/lasso-exp/lib/python3.10/urllib/request.py", line 643, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: Forbidden

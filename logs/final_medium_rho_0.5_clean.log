@@ -1,0 +1,7 @@
+
+Synthetic dataset results
+------------------------------------------------------------
+Subgradient  | recovery_error=1.248809 | nnz=499 | support_ok=False | iter=800
+ISTA         | recovery_error=1.067482 | nnz= 26 | support_ok=False | iter=241
+FISTA        | recovery_error=1.067467 | nnz= 26 | support_ok=False | iter=254
+ADMM         | recovery_error=1.067471 | nnz= 26 | support_ok=False | iter=149 | primal_res=9.657946e-07 | dual_res=1.949184e-08

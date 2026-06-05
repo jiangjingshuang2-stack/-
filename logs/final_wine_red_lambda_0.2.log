@@ -1,0 +1,7 @@
+
+Diabetes dataset results
+------------------------------------------------------------
+Subgradient  | train_mse=0.652122 | test_mse=0.599255 | nnz= 11 | iter=500
+ISTA         | train_mse=0.652008 | test_mse=0.599575 | nnz= 11 | iter=373
+FISTA        | train_mse=0.652008 | test_mse=0.599577 | nnz= 11 | iter=213
+ADMM         | train_mse=0.652008 | test_mse=0.599576 | nnz= 11 | iter= 21 | primal_res=7.025095e-17 | dual_res=2.071358e-07

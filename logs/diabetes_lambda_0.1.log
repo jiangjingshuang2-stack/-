@@ -1,0 +1,61 @@
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: divide by zero encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: overflow encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: invalid value encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/experiments.py:121: RuntimeWarning: divide by zero encountered in matmul
+  pred_train = X_train @ coef
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/experiments.py:121: RuntimeWarning: overflow encountered in matmul
+  pred_train = X_train @ coef
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/experiments.py:121: RuntimeWarning: invalid value encountered in matmul
+  pred_train = X_train @ coef
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: divide by zero encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: overflow encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: invalid value encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: divide by zero encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: overflow encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: invalid value encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: divide by zero encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: overflow encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: invalid value encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: divide by zero encountered in matmul
+  atb = A.T @ b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: overflow encountered in matmul
+  atb = A.T @ b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: invalid value encountered in matmul
+  atb = A.T @ b
+
+Diabetes dataset results
+------------------------------------------------------------
+Subgradient  | train_mse=nan | test_mse=nan | nnz=  0 | iter=500
+ISTA         | train_mse=0.472715 | test_mse=0.475545 | nnz= 10 | iter=500
+FISTA        | train_mse=0.472109 | test_mse=0.476676 | nnz= 10 | iter=500
+ADMM         | train_mse=0.472114 | test_mse=0.476642 | nnz= 10 | iter= 11 | primal_res=6.254634e-17 | dual_res=5.519056e-07

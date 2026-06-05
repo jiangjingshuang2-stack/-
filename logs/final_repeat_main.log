@@ -1,0 +1,11 @@
+
+Repeated experiment completed
+------------------------------------------------------------
+  algorithm  recovery_error_mean  recovery_error_std  nnz_mean  nnz_std  iter_mean  iter_std
+       ADMM             0.934555            0.142615      21.4 3.781534       81.8  3.114482
+      FISTA             0.934569            0.142625      21.4 3.781534      215.0 35.616008
+       ISTA             0.934565            0.142619      21.4 3.781534      229.6 48.459261
+Subgradient             1.120904            0.200960     499.2 0.836660      800.0  0.000000
+
+detail_csv=/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/results/synthetic/synthetic_repeat_detail.csv
+summary_csv=/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/results/synthetic/synthetic_repeat_summary.csv

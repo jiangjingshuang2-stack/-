@@ -1,0 +1,61 @@
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/data.py:36: RuntimeWarning: divide by zero encountered in matmul
+  b = A @ x_star + noise
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/data.py:36: RuntimeWarning: overflow encountered in matmul
+  b = A @ x_star + noise
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/data.py:36: RuntimeWarning: invalid value encountered in matmul
+  b = A @ x_star + noise
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:34: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ x - b) + lam * subgrad_l1
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: divide by zero encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: overflow encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/utils.py:11: RuntimeWarning: invalid value encountered in matmul
+  residual = A @ x - b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: divide by zero encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: overflow encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:15: RuntimeWarning: invalid value encountered in matmul
+  v = A.T @ (A @ v)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: divide by zero encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: overflow encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:20: RuntimeWarning: invalid value encountered in matmul
+  return np.dot(v, A.T @ (A @ v))
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:56: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ x - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: divide by zero encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: overflow encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:78: RuntimeWarning: invalid value encountered in matmul
+  grad = A.T @ (A @ y - b)
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: divide by zero encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: overflow encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:98: RuntimeWarning: invalid value encountered in matmul
+  ata = A.T @ A
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: divide by zero encountered in matmul
+  atb = A.T @ b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: overflow encountered in matmul
+  atb = A.T @ b
+/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/src/algorithms.py:99: RuntimeWarning: invalid value encountered in matmul
+  atb = A.T @ b
+
+Synthetic dataset results
+------------------------------------------------------------
+Subgradient  | recovery_error=0.926804 | nnz=500 | support_ok=False | iter=800
+ISTA         | recovery_error=0.656177 | nnz= 82 | support_ok=False | iter=800
+FISTA        | recovery_error=0.656117 | nnz= 82 | support_ok=False | iter=739
+ADMM         | recovery_error=0.656096 | nnz= 82 | support_ok=False | iter=133 | primal_res=6.141992e-07 | dual_res=9.205226e-07

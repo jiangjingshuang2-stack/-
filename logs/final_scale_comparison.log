@@ -1,0 +1,18 @@
+
+Scale comparison experiment completed
+------------------------------------------------------------
+      scale   m    n  sparsity   algorithm  recovery_error  nnz  iter
+  80/200/10  80  200        10 Subgradient        0.582503  200   800
+  80/200/10  80  200        10        ISTA        0.578516    7    97
+  80/200/10  80  200        10       FISTA        0.578516    7   117
+  80/200/10  80  200        10        ADMM        0.578516    7    70
+ 150/500/20 150  500        20 Subgradient        1.248809  499   800
+ 150/500/20 150  500        20        ISTA        1.067482   26   241
+ 150/500/20 150  500        20       FISTA        1.067467   26   254
+ 150/500/20 150  500        20        ADMM        1.067471   26    80
+300/1000/30 300 1000        30 Subgradient        1.393068 1000   800
+300/1000/30 300 1000        30        ISTA        1.235805   31   221
+300/1000/30 300 1000        30       FISTA        1.235818   31   198
+300/1000/30 300 1000        30        ADMM        1.235796   31    84
+
+scale_csv=/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/results/synthetic/synthetic_scale_comparison.csv

@@ -1,0 +1,9 @@
+
+Communities and Crime cleaned features: 100
+
+Real dataset results
+------------------------------------------------------------
+Subgradient  | train_mse=0.331576 | test_mse=0.309658 | nnz=100 | iter=500
+ISTA         | train_mse=0.307746 | test_mse=0.313245 | nnz=100 | iter=500
+FISTA        | train_mse=0.299437 | test_mse=0.311500 | nnz= 98 | iter=500
+ADMM         | train_mse=0.299445 | test_mse=0.311230 | nnz= 96 | iter=500 | primal_res=2.948951e-05 | dual_res=2.936973e-07

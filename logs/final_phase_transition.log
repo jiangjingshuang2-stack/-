@@ -1,0 +1,21 @@
+
+Phase transition experiment completed
+------------------------------------------------------------
+ sigma algorithm  success_rate  mean_recovery_error
+  0.00      ISTA           0.0             0.898132
+  0.00     FISTA           0.0             0.898123
+  0.00      ADMM           0.0             0.898126
+  0.01      ISTA           0.0             0.902071
+  0.01     FISTA           0.0             0.902060
+  0.01      ADMM           0.0             0.902064
+  0.05      ISTA           0.0             0.964803
+  0.05     FISTA           0.0             0.964800
+  0.05      ADMM           0.0             0.964794
+  0.10      ISTA           0.0             1.202129
+  0.10     FISTA           0.0             1.202119
+  0.10      ADMM           0.0             1.202120
+  0.20      ISTA           0.0             1.980295
+  0.20     FISTA           0.0             1.980293
+  0.20      ADMM           0.0             1.980291
+
+phase_csv=/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/results/synthetic/synthetic_phase_transition.csv

@@ -1,0 +1,6 @@
+
+Regularization path experiment completed
+------------------------------------------------------------
+solver=ADMM
+lambdas=[0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]
+path_csv=/Users/jiangjingshuang/Desktop/最优化/lasso_experiment/results/synthetic/synthetic_regularization_path_admm.csv
