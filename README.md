@@ -94,4 +94,4 @@ python run_final_experiments.py
 - `final_report.tex`：已更新的正式报告源文件
 - `report_figures/`：适合报告和 PPT 使用的代表图片
 
-当前环境未安装 LaTeX 编译器，因此仓库中的 `final_report.pdf` 尚未根据最新源文件重新生成。
+提交报告前，请根据最新的 `final_report.tex` 重新编译并核对 `final_report.pdf` 中的图表与数值。
