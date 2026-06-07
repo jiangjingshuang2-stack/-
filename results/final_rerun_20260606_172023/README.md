@@ -1,17 +1,38 @@
-# 最终完整实验阅读入口
+# 最终完整实验：阅读导航与结论链
 
-本目录是建议同学统一用于课程报告和 PPT 的最终完整结果。
+这是课程报告和 PPT 应使用的唯一正式结果目录。所有实验使用统一代码入口运行，并保存在同一时间戳目录中。
 
-- 项目根目录中的 `DATASETS_AND_EXPERIMENTS.md`：统一介绍数据集、预处理、评价指标和实验设计。
-- 总体运行配置、文件夹说明和运行状态：阅读 `README_results.md`
-- 总汇总表说明：阅读 `summary/README.md`
-- 每张图片的用途、读图方法和主要结论：阅读对应实验子文件夹中的 `README.md`
+## 如何串联这些实验
 
-## 建议阅读顺序
+建议按以下逻辑写报告，而不是把实验写成互不相关的结果：
 
-1. `synthetic_baseline/README.md`：了解四种算法的基础比较。
-2. `lambda_sensitivity/README.md`：了解正则化参数对稀疏度和恢复误差的影响。
-3. `rho_sensitivity/README.md`：了解 ADMM 参数对收敛速度的影响。
-4. `repeat_experiment/README.md`：确认实验结论的稳定性。
-5. `sklearn_compare/README.md`：验证自实现算法的正确性。
-6. `real_diabetes/README.md`、`real_wine_red/README.md` 和 `real_communities_crime/README.md`：查看真实数据结果。
+1. **基础实验建立现象**：ISTA、FISTA、ADMM 得到几乎相同的解，ADMM 迭代更少，Subgradient 稀疏性差。
+2. **Lambda 实验解释解为什么是当前稀疏度**：lambda 决定误差与稀疏度的权衡，并支持最终选择 `lambda=0.1`。
+3. **Rho 实验解释 ADMM 为什么快**：rho 不改变最终解，但显著影响达到该解所需的迭代次数。
+4. **重复实验验证现象不是偶然**：多个随机种子下，解质量一致和 ADMM 迭代优势仍然成立。
+5. **sklearn 对照验证实现可信**：成熟库与自实现的 ISTA、FISTA、ADMM 几乎完全一致。
+6. **真实数据验证应用价值**：不同算法预测误差接近，ADMM 仍通常最快；同时真实数据稀疏性取决于数据结构和 lambda。
+
+## 子目录导航
+
+| 子目录 | 核心结论 | 报告中的作用 |
+|---|---|---|
+| `synthetic_baseline/` | 三种结构化算法解质量一致，ADMM 迭代最少 | 主结果 |
+| `lambda_sensitivity/` | lambda 越大越稀疏，但过大会增加误差 | 参数解释 |
+| `rho_sensitivity/` | rho 改变收敛速度，不改变最终解 | ADMM 参数解释 |
+| `repeat_experiment/` | 主结论在五个随机种子下稳定 | 稳定性验证 |
+| `sklearn_compare/` | 自实现方法与 sklearn 高度一致 | 正确性验证 |
+| `real_diabetes/` | 真实低维数据上 ADMM 快、预测误差接近 | 应用验证一 |
+| `real_wine_red/` | 跨数据集仍观察到 ADMM 效率优势 | 应用验证二 |
+| `real_communities_crime/` | 复杂数据上 ADMM 仍快，但当前参数稀疏性有限 | 应用验证三 |
+| `summary/` | 将所有结果整理为统一宽表 | 写总表和结论页 |
+
+## 可直接用于报告的总体结论
+
+> 最终实验表明，ISTA、FISTA 和 ADMM 能够求得高度一致且与 sklearn Lasso 匹配的解，其中 ADMM 在基础实验、重复实验和真实数据实验中通常需要更少迭代次数。Lambda 决定恢复误差与稀疏度之间的权衡，而 rho 主要影响 ADMM 的收敛速度。真实数据实验进一步说明，不同优化算法的预测误差通常接近，但模型是否呈现强稀疏性还取决于数据结构与正则化强度。
+
+## 其他入口
+
+- 数据集、预处理、评价指标和实验设计：项目根目录 `DATASETS_AND_EXPERIMENTS.md`
+- 总体运行配置与字段说明：`README_results.md`
+- PPT 最终口径：项目根目录 `PPT_FINAL_VERSION.md`

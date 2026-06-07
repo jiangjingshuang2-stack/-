@@ -25,3 +25,12 @@
 - 总表：从本文件提取基础实验和真实数据实验的关键指标。
 - 结论页：优先强调 ADMM 的迭代效率、lambda 的稀疏度权衡，以及 sklearn 对照验证。
 - 图表说明：请阅读各实验子文件夹中的 `README.md`。
+
+## 推荐的总论结构
+
+1. 用 `synthetic_baseline` 建立算法比较结论。
+2. 用 `lambda_sensitivity` 和 `rho_sensitivity` 分别解释最终解与收敛速度。
+3. 用 `repeat_experiment` 和 `sklearn_compare` 验证稳定性与正确性。
+4. 用三个 `real_*` 实验验证应用价值并讨论真实数据稀疏性的限制。
+
+从总汇总表提取数字时，应同时阅读对应子目录 README，避免脱离实验目的单独比较数值。
