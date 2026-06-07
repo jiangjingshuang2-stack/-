@@ -1,10 +1,13 @@
 import argparse
 import os
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+os.environ.setdefault("MPLCONFIGDIR", str(PROJECT_ROOT / "results" / ".matplotlib_cache"))
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import wandb
 from sklearn.linear_model import Lasso
 
 from src.algorithms import admm, fista, ista, subgradient_descent
@@ -16,6 +19,9 @@ from src.data import (
     make_synthetic_lasso_data,
 )
 from src.utils import mse, safe_matmul, support_recovery
+
+
+wandb = None
 
 
 def ensure_dir(path):
@@ -595,6 +601,7 @@ def print_real_sklearn_results(results):
 
 
 def main():
+    global wandb
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
@@ -655,6 +662,9 @@ def main():
     ensure_dir(result_dir)
 
     if args.use_wandb:
+        import wandb as wandb_module
+
+        wandb = wandb_module
         # 记录本次实验的关键超参数，方便后续筛选和对比。
         wandb.init(
             project=args.wandb_project,
